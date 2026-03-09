@@ -105,7 +105,7 @@ contract EvictionVaultTest is Test {
         vault.setMerkleRoot(root);
 
         vm.warp(block.timestamp + ONE_HOUR);
-        vault.executeTransaction(0); // sets merkle root
+        vault.executeTransaction(0); 
 
         bytes32[] memory proof = new bytes32[](0);
 
