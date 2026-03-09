@@ -13,12 +13,10 @@ contract EvictionVaultTest is Test {
 
     uint256 constant ONE_HOUR = 3_601; // just past the 1-hour timelock
 
-    // ── Helper ────────────────────────────────────────────────────────────────
     function merkleLeaf(address addr, uint256 amount) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(addr, amount));
     }
 
-    // ── Setup ─────────────────────────────────────────────────────────────────
     function setUp() public {
         owner = makeAddr("owner");
         alice = makeAddr("alice");
@@ -36,7 +34,6 @@ contract EvictionVaultTest is Test {
         vault = new EvictionVault{value: 1 ether}(_owners, 1);
     }
 
-    // ── Deployment ────────────────────────────────────────────────────────────
     function test_Deployment_SetsOwnerAndThreshold() public view {
         assertTrue(vault.isOwner(owner));
         assertEq(vault.threshold(), 1);
@@ -44,7 +41,6 @@ contract EvictionVaultTest is Test {
         assertEq(vault.totalVaultValue(), 1 ether);
     }
 
-    // ── Deposit ───────────────────────────────────────────────────────────────
     function test_Deposit_TracksETH() public {
         vm.prank(alice);
         vault.deposit{value: 0.5 ether}();
@@ -62,7 +58,6 @@ contract EvictionVaultTest is Test {
         assertEq(vault.balances(alice), 0.25 ether);
     }
 
-    // ── Withdraw ──────────────────────────────────────────────────────────────
     function test_Withdraw_ReturnsETHToDepositor() public {
         vm.prank(alice);
         vault.deposit{value: 0.5 ether}();
@@ -76,7 +71,6 @@ contract EvictionVaultTest is Test {
         assertEq(vault.balances(alice), 0);
     }
 
-    // ── Multi-sig + Timelock ──────────────────────────────────────────────────
     function test_Timelock_ExecutesETHTransferAfterDelay() public {
         // Owner submits a transaction sending 0.1 ETH to alice
         vm.prank(owner);
@@ -95,7 +89,6 @@ contract EvictionVaultTest is Test {
         assertEq(alice.balance - before, 0.1 ether);
     }
 
-    // ── Merkle Claim ──────────────────────────────────────────────────────────
     function test_MerkleClaim_WhitelistedAddressCanClaimAfterRootSet() public {
         uint256 claimAmount = 0.2 ether;
         // For a single-leaf Merkle tree the root equals the leaf itself.
@@ -126,7 +119,6 @@ contract EvictionVaultTest is Test {
         vault.claim(proof, claimAmount);
     }
 
-    // ── Pause / Unpause ───────────────────────────────────────────────────────
     function test_PauseUnpause_WhenThresholdVotesReached() public {
         vm.prank(owner);
         vault.votePause();
@@ -149,7 +141,6 @@ contract EvictionVaultTest is Test {
         assertEq(alice.balance - before, 0.1 ether);
     }
 
-    // ── Emergency Withdraw ────────────────────────────────────────────────────
     function test_EmergencyWithdraw_DrainsVaultOnlyViaMulsig() public {
         // Direct call must revert
         vm.expectRevert("only callable via multisig");
